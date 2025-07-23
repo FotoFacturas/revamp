@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.softwerkhq.fotofacturas",
+      "sha256_cert_fingerprints": ["E0:35:AB:5C:D5:04:4A:BF:CA:F1:D0:82:3C:C3:5D:34:CA:2F:B6:52:93:BC:65:37:DB:6D:FA:65:E0:D3:34:11"]
+    }
+  }
+] 

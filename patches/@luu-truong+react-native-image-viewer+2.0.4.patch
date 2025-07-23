@@ -1,0 +1,130 @@
+diff --git a/node_modules/@luu-truong/react-native-image-viewer/dist/src/Image.js b/node_modules/@luu-truong/react-native-image-viewer/dist/src/Image.js
+index eb1fe20..e06e0bc 100644
+--- a/node_modules/@luu-truong/react-native-image-viewer/dist/src/Image.js
++++ b/node_modules/@luu-truong/react-native-image-viewer/dist/src/Image.js
+@@ -287,9 +287,29 @@ var ImageComponent = /** @class */ (function (_super) {
+         };
+         _this._setIsZooming = function (isZooming) { return _this.setState({ isZooming: isZooming }, function () { return _this.props.onZoomStateChange(isZooming); }); };
+         _this._renderHeader = function () {
+-            if (_this.state.isZooming) {
++            var backdropStyle = 
++                {
++                    width: SCREEN_WIDTH,
++                    height: 44, 
++                    justifyContent: 'center', 
++                    borderBottomWidth: .33, 
++                    borderBottomColor: 'rgba(77,77,77,.33)',
++                    opacity: this._translateXY.y.interpolate({
++                        inputRange: [0, SCREEN_HEIGHT/8],
++                        outputRange: [1, 0],
++                    }),
++                };
++
++            if (_this.state.isZooming || _this._isPinching) {
+                 return null;
+             }
++            if (_this.props.renderHeaderComponent) {
++                return(
++                    <Animated.View style={backdropStyle}>
++                    {_this.props.renderHeaderComponent()}
++                    </Animated.View>
++                );
++            }
+             var headerAnim = [
+                 styles.header,
+                 {
+@@ -414,17 +434,31 @@ var ImageComponent = /** @class */ (function (_super) {
+                 }),
+             },
+         ];
+-        return (<View style={styles.container}>
+-        <Animated.View style={backdropStyle} {...this._panResponder.panHandlers}/>
+-        <Animated.View style={moveObjStyle} {...(this.state.isZooming || Platform.OS === 'ios' ? this._panResponder.panHandlers : {})} renderToHardwareTextureAndroid>
+-            <RNImage source={this.props.source} style={computeImageStyle} onLoadEnd={this._onImageLoadEnd}/>
+-        </Animated.View>
+-        <SafeAreaView style={styles.safeAreaContainer} pointerEvents="none">
+-          {this._renderHeader()}
+-          {this.state.loading && <ActivityIndicator color={'#fff'}/>}
+-          {this._renderFooter()}
+-        </SafeAreaView>
+-      </View>);
++        return (
++            <View style={styles.container}>
++                <Animated.View style={backdropStyle} {...this._panResponder.panHandlers}/>
++                <Animated.View style={moveObjStyle} {...(this.state.isZooming || Platform.OS === 'ios' ? this._panResponder.panHandlers : {})} renderToHardwareTextureAndroid>
++                    <RNImage source={this.props.source} style={computeImageStyle} onLoadEnd={this._onImageLoadEnd}/>
++                </Animated.View>
++                <SafeAreaView style={styles.safeAreaContainer} pointerEvents="box-none">
++                    {this._renderHeader()}
++                    {this.state.loading && (
++                    <View style={{
++                        position: 'absolute',
++                        left: 0,
++                        right: 0,
++                        top: 0,
++                        bottom: 0,
++                        alignItems: 'center',
++                        justifyContent: 'center'
++                    }}>
++                        <ActivityIndicator size="large" color={'#fff'}/>
++                    </View>
++                    )}
++                    {this._renderFooter()}
++                </SafeAreaView>
++            </View>
++      );
+     };
+     ImageComponent.defaultProps = {
+         initialWidth: 200,
+diff --git a/node_modules/@luu-truong/react-native-image-viewer/dist/src/index.js b/node_modules/@luu-truong/react-native-image-viewer/dist/src/index.js
+index 62d68a3..ee58801 100644
+--- a/node_modules/@luu-truong/react-native-image-viewer/dist/src/index.js
++++ b/node_modules/@luu-truong/react-native-image-viewer/dist/src/index.js
+@@ -26,12 +26,25 @@ var ImageViewer = /** @class */ (function (_super) {
+             isZooming: false,
+         };
+         _this._scrollRef = React.createRef();
++
+         _this._closeInternal = function () { return _this.props.onClose(); };
+         _this._renderImage = function (info) {
+             var _a, _b, _c;
+-            return (<Image source={info.item.source} title={info.item.title} onClose={_this._closeInternal} onZoomStateChange={_this._onZoomStateChange} imageIndex={info.index} imagesTotal={_this._getItemCount()} 
+-            // extendable props
+-            debug={_this.props.debug} initialWidth={(_a = _this.props.imageProps) === null || _a === void 0 ? void 0 : _a.initialWidth} initialHeight={(_b = _this.props.imageProps) === null || _b === void 0 ? void 0 : _b.initialHeight} renderFooter={(_c = _this.props.imageProps) === null || _c === void 0 ? void 0 : _c.renderFooter}/>);
++            
++            return (<Image 
++                source={info.item.source} 
++                title={info.item.title} 
++                onClose={_this._closeInternal} 
++                onZoomStateChange={_this._onZoomStateChange} 
++                imageIndex={info.index} 
++                imagesTotal={_this._getItemCount()} 
++                renderHeaderComponent={_this.props.renderHeaderComponent}
++                // extendable props
++                debug={_this.props.debug} 
++                initialWidth={(_a = _this.props.imageProps) === null || _a === void 0 ? void 0 : _a.initialWidth} 
++                initialHeight={(_b = _this.props.imageProps) === null || _b === void 0 ? void 0 : _b.initialHeight} 
++                renderFooter={(_c = _this.props.imageProps) === null || _c === void 0 ? void 0 : _c.renderFooter}
++            />);
+         };
+         _this._onZoomStateChange = function (isZooming) {
+             _this._scrollRef.current.getScrollRef().setNativeProps({
+@@ -56,9 +69,15 @@ var ImageViewer = /** @class */ (function (_super) {
+             },
+             android: {},
+         });
+-        return (<Modal visible={this.props.visible} transparent animationType={this.props.animationType} onRequestClose={this._closeInternal}>
+-        <VirtualizedList horizontal showsHorizontalScrollIndicator={false} windowSize={2} data={this.props.images} renderItem={this._renderImage} keyExtractor={this._keyExtractor} getItemCount={this._getItemCount} getItem={this._getItem} getItemLayout={this._getItemLayout} scrollEnabled ref={this._scrollRef} removeClippedSubviews={true} maxToRenderPerBatch={2} initialNumToRender={2} updateCellsBatchingPeriod={100} pagingEnabled initialScrollIndex={this.props.initialIndex} listKey={'RNImageViewer'} {...platformProps}/>
+-      </Modal>);
++        return (
++        <Modal 
++            visible={this.props.visible} 
++            transparent 
++            animationType={this.props.animationType} 
++            onRequestClose={this._closeInternal}
++        >
++            <VirtualizedList horizontal showsHorizontalScrollIndicator={false} windowSize={2} data={this.props.images} renderItem={this._renderImage} keyExtractor={this._keyExtractor} getItemCount={this._getItemCount} getItem={this._getItem} getItemLayout={this._getItemLayout} scrollEnabled ref={this._scrollRef} removeClippedSubviews={true} maxToRenderPerBatch={2} initialNumToRender={2} updateCellsBatchingPeriod={100} pagingEnabled initialScrollIndex={this.props.initialIndex} listKey={'RNImageViewer'} {...platformProps}/>
++        </Modal>);
+     };
+     ImageViewer.defaultProps = {
+         animationType: 'none',

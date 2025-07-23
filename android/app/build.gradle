@@ -1,0 +1,119 @@
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
+apply plugin: "com.google.gms.google-services"
+
+apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
+
+react {
+    /* Bundling */
+    // Configuración para optimizar el bundling
+    nodeExecutableAndArgs = ["node", "--max-old-space-size=4096"]
+    
+    /* Autolinking */
+    autolinkLibrariesWithApp()
+}
+
+/**
+ * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ */
+def enableProguardInReleaseBuilds = false
+
+/**
+ * The preferred build flavor of JavaScriptCore (JSC)
+ */
+def jscFlavor = 'org.webkit:android-jsc:+'
+
+android {
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdk rootProject.ext.compileSdkVersion
+
+    namespace "com.fotofactura"
+    defaultConfig {
+        applicationId "com.fotofactura"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 328
+        versionName "3.0.28"
+        
+        // Configurar para usar más memoria durante la compilación
+        multiDexEnabled true
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+        release {
+            storeFile file("fotofacturas.keystore")  // production keystore
+            storePassword "fotofacturas"
+            keyAlias "fotofacturas"
+            keyPassword "fotofacturas"
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.release  // correct keystore
+            minifyEnabled enableProguardInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+        
+        // Nueva configuración para generar un APK sin minificación para pruebas
+        staging {
+            initWith release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            matchingFallbacks = ['release']
+            signingConfig signingConfigs.release
+            applicationIdSuffix ".staging"
+        }
+    }
+    
+    // Solución para problemas de compatibilidad
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+    }
+    
+    // Configurar para mejor rendimiento de compilación
+    configurations.all {
+        resolutionStrategy {
+            force 'com.amazon.device:amazon-appstore-sdk:3.0.5'
+        }
+    }
+}
+
+dependencies {
+    // The version of react-native is set by the React Native Gradle Plugin
+    implementation("com.facebook.react:react-android")
+
+    implementation 'com.android.billingclient:billing:7.0.0'
+    
+    // Agregar soporte para multidex
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    // RevenueCat dependencies
+    implementation 'com.revenuecat.purchases:purchases:6.0.0'
+    implementation 'com.revenuecat.purchases:purchases-ui:6.0.0'
+    implementation platform("com.google.firebase:firebase-bom:33.12.0")
+
+    if (hermesEnabled.toBoolean()) {
+        implementation("com.facebook.react:hermes-android")
+    } else {
+        implementation jscFlavor
+    }
+}

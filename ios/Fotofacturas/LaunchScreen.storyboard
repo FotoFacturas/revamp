@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23094" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="OmT-ut-e5i">
+            <objects>
+                <viewController storyboardIdentifier="launchScreenVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="g2a-I8-WcJ" sceneMemberID="viewController">
+                    <view key="view" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="uHj-TO-h8e">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo-fotofactura.png" translatesAutoresizingMaskIntoConstraints="NO" id="uum-jG-f66">
+                                <rect key="frame" x="117.5" y="238" width="140" height="211"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="140" id="y7g-O0-SQn" userLabel="width = 200"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="qGB-lM-LKw"/>
+                        <color key="backgroundColor" red="0.35686274509999999" green="0.1333333333" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="uum-jG-f66" firstAttribute="centerX" secondItem="qGB-lM-LKw" secondAttribute="centerX" id="2rt-HB-jhj"/>
+                            <constraint firstItem="uum-jG-f66" firstAttribute="centerY" secondItem="qGB-lM-LKw" secondAttribute="centerY" id="I8d-jm-t0c"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="te6-T9-gwz" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="52.173913043478265" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="logo-fotofactura.png" width="189" height="211"/>
+    </resources>
+</document>

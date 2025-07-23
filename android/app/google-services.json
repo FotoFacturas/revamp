@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "346260671715",
+    "project_id": "fotofacturas-1111-1111",
+    "storage_bucket": "fotofacturas-1111-1111.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:346260671715:android:90c8984b07e4aea7b849d6",
+        "android_client_info": {
+          "package_name": "com.fotofactura"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXY2Zjk10Ve0E1RooJiSM7xp5FhE1VtHs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

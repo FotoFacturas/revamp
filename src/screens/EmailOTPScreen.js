@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   ScrollView,
   Keyboard,
   Platform,
+  Clipboard,
+  TextInput,
 } from 'react-native';
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -294,10 +296,36 @@ export default function EmailOTPScreen(props) {
               </Text>
             </View>
 
+            {/* TextInput invisible para manejar pegar */}
+            <TextInput
+              style={{ position: 'absolute', left: -1000, opacity: 0 }}
+              value=""
+              onChangeText={(text) => {
+                // Detectar pegar - si hay más de 1 carácter pegado
+                if (text.length > 1) {
+                  const pastedCode = text.replace(/\D/g, '').substring(0, 6);
+                  if (pastedCode.length >= 4) {
+                    setCode(pastedCode);
+                  }
+                }
+              }}
+              keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete="sms-otp"
+            />
+
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
                 pinInputRef.current?.focus();
+              }}
+              onLongPress={() => {
+                Clipboard.getString().then((clipboardContent) => {
+                  const pastedCode = clipboardContent.replace(/\D/g, '').substring(0, 6);
+                  if (pastedCode.length >= 4) {
+                    setCode(pastedCode);
+                  }
+                });
               }}
             >
               <SmoothPinCodeInput
@@ -306,27 +334,10 @@ export default function EmailOTPScreen(props) {
                 cellSpacing={8}
                 codeLength={6}
                 value={code}
-                onTextChange={(text) => {
-                  setTimeout(() => {
-                    // Detectar si se pegó texto (cambio de longitud > 1)
-                    if (text.length > code.length + 1) {
-                      // Se pegó texto, tomar solo los primeros 6 dígitos
-                      const pastedCode = text.replace(/\D/g, '').substring(0, 6);
-                      setCode(pastedCode);
-                    } else {
-                      setCode(text);
-                    }
-                    // Track when user inputs code
-                    if (text.length % 2 === 0) {
-                      amplitudeService.trackEvent('Input_Changed', {
-                        screen: 'email_otp',
-                        field: 'code',
-                        length: text.length,
-                        expected_length: 6
-                      });
-                    }
-                  }, 0);
-                }}
+                onTextChange={setCode}
+                restrictToNumbers={true}
+                autoFocus={false}
+                keyboardType="number-pad"
                 cellStyle={{
                   borderWidth: 1,
                   borderColor: colors?.border?.medium || '#D1D5DB',
@@ -356,14 +367,6 @@ export default function EmailOTPScreen(props) {
                   fontSize: typography?.fontSize?.xl || 20,
                   fontWeight: typography?.fontWeight?.bold || '700',
                 }}
-                restrictToNumbers={true}
-                autoFocus={false}
-                keyboardType="number-pad"
-                maskDelay={0}
-                autoCapitalize="none"
-                textContentType="oneTimeCode"
-                editable={true}
-                selectTextOnFocus={true}
                 onFulfill={() => {
                   pinInputRef.current?.blur();
                 }}

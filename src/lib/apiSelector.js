@@ -219,6 +219,77 @@ const apiSelector = {
     }
   },
 
+  // ✅ updateUserPhone: Actualizar teléfono del usuario para nueva API
+  updateUserPhone: async (token, phone) => {
+    console.log('🔄 ApiSelector.updateUserPhone: Iniciando para', phone);
+    
+    if (USE_NEW_API) {
+      console.log('🆕 ApiSelector.updateUserPhone: Usando nueva API');
+      
+      try {
+        // 1. Primero obtener datos actuales del usuario
+        console.log('📋 Obteniendo datos actuales del usuario...');
+        const userData = await newApiWrapper.getUserData(token);
+        console.log('📋 Datos actuales obtenidos:', userData);
+        
+        // 2. Extraer datos del usuario desde la estructura de respuesta
+        const currentUser = userData.data; // La respuesta viene en data
+        
+        // 3. Preparar datos completos según UserUpdateDTO del swagger
+        // ✅ IMPORTANTE: phone y phoneCode van SEPARADOS
+        const phoneWithoutCountryCode = phone.replace('+52', ''); // Quitar +52
+        
+        const updateData = {
+          name: currentUser.name || '',
+          pSurname: currentUser.pSurname || '', 
+          mSurname: currentUser.mSurname || '',
+          email: currentUser.email || '',
+          phone: phoneWithoutCountryCode, // ✅ Solo el número sin código país
+          phoneCode: '52' // ✅ Código de país separado
+        };
+        
+        console.log('📝 Enviando UserUpdateDTO completo:', updateData);
+        
+        // 4. Actualizar el usuario con todos los campos requeridos
+        await newApiWrapper.updateUser(token, updateData);
+        
+        // 5. Solicitar OTP al nuevo teléfono
+        console.log('📱 Solicitando OTP al teléfono actualizado...');
+        const result = await newApiWrapper.requestVerifyOtpPhone(token);
+        
+        console.log('✅ ApiSelector.updateUserPhone: Nueva API exitosa');
+        return result;
+        
+      } catch (error) {
+        console.error('❌ Error en updateUserPhone:', error);
+        throw error;
+      }
+      
+    } else {
+      console.log('🔄 ApiSelector.updateUserPhone: Usando API antigua');
+      // Para API antigua, usar el método existente
+      const result = await oldApi.authMergeCellphoneIntent(phone, token);
+      console.log('✅ ApiSelector.updateUserPhone: API antigua exitosa');
+      return result;
+    }
+  },
+
+  // ✅ validateOtpPhone: Validar OTP de teléfono
+  validateOtpPhone: async (token, otp) => {
+    console.log('🔄 ApiSelector.validateOtpPhone: Iniciando para código de', otp.length, 'dígitos');
+    
+    if (USE_NEW_API) {
+      console.log('🆕 ApiSelector.validateOtpPhone: Usando nueva API');
+      const result = await newApiWrapper.validateOtpPhone(token, otp);
+      console.log('✅ ApiSelector.validateOtpPhone: Nueva API exitosa');
+      return result;
+    } else {
+      console.log('🔄 ApiSelector.validateOtpPhone: Usando API antigua');
+      // Para API antigua, mantener el flujo existente
+      throw new Error('validateOtpPhone solo disponible para nueva API');
+    }
+  },
+
   // TODO: Agregar más métodos según se vayan migrando las funcionalidades
   // requestLoginOtpPhone: async (phone) => { ... },
   // loginOtpPhone: async (phone, otp) => { ... },

@@ -23,6 +23,8 @@ import NeuButton from './../components/NeuButton';
 import { useIsFocused } from '@react-navigation/native';
 import amplitudeService from '../utils/analytics/amplitude';
 import { colors, typography, spacing, borderRadius } from '../theme';
+import apiSelector from '../lib/apiSelector';
+import { USE_NEW_API } from '../lib/config';
 
 const screenHeight = Math.round(Dimensions.get('window').height);
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -55,7 +57,20 @@ export default function PhoneOTPScreen(props) {
   const isOnboarding = props.route?.params?.isOnboarding || false;
 
   const cellphone = userCellphone.replace('*', '');
-  const disabled = code.length < 5;
+  // Debug log para verificar configuración
+  React.useEffect(() => {
+    console.log('📱 PhoneOTPScreen - Configuración:', {
+      USE_NEW_API,
+      expectedDigits,
+      userCellphone,
+      hasToken: !!token,
+      hasUser: !!user,
+      isOnboarding
+    });
+  }, [expectedDigits, userCellphone, token, user, isOnboarding]);
+  // ✅ Dígitos según API: Nueva = 6, Antigua = 5
+  const expectedDigits = USE_NEW_API ? 6 : 5;
+  const disabled = code.length < expectedDigits;
 
   // Track screen view when component is focused
   React.useEffect(() => {
@@ -69,17 +84,22 @@ export default function PhoneOTPScreen(props) {
 
   React.useEffect(() => {
     if (!isMounted()) return;
-    if (code.length === 5) handleVerification();
-  }, [code]);
+    if (code.length === expectedDigits) handleVerification();
+  }, [code, expectedDigits]);
 
   const handleVerifyAndMerge = async () => {
     setSpinner(true);
     try {
-      const data = await API.authMergeCellphoneVerify(
-        userCellphone,
-        code,
-        token,
-      );
+      let data;
+      if (USE_NEW_API) {
+        // ✅ Nueva API: Validar OTP de teléfono
+        console.log('🆕 Usando nueva API para validar OTP de teléfono');
+        data = await apiSelector.validateOtpPhone(token, code);
+      } else {
+        // ✅ API antigua
+        console.log('🔄 Usando API antigua para validar OTP de teléfono');
+        data = await API.authMergeCellphoneVerify(userCellphone, code, token);
+      }
 
       const taxpayerID = data?.user?.taxpayer_identifier || '';
       const hasTaxpayerID = taxpayerID.length > 0;
@@ -235,7 +255,7 @@ export default function PhoneOTPScreen(props) {
                   ref={pinInputRef}
                   cellSize={50}
                   cellSpacing={8}
-                  codeLength={5}
+                  codeLength={expectedDigits}
                   value={code}
                   onTextChange={(text) => {
                     setTimeout(() => {

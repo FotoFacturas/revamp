@@ -114,9 +114,18 @@ export default function EmailOTPScreen(props) {
 
       console.log('✅ OTP verificado exitosamente:', data);
 
+      // ✅ Normalizar datos según API usada
+      const normalizedData = USE_NEW_API ? {
+        user: {
+          id: data.data.userId,
+          taxpayer_cellphone: data.data.phone || '',
+        },
+        token: data.data.token
+      } : data;
+
       // Track successful verification
       amplitudeService.trackEvent('Email_OTP_Verified', {
-        has_phone: !data?.user?.taxpayer_cellphone,
+        has_phone: USE_NEW_API ? !data.data.phone : !data?.user?.taxpayer_cellphone,
         is_onboarding: isOnboarding,
         full_name: fullName,
         api_version: USE_NEW_API ? 'new' : 'old',
@@ -125,21 +134,22 @@ export default function EmailOTPScreen(props) {
 
       setSpinner(false);
 
-      const phone = data?.user?.taxpayer_cellphone || '';
-      const hasPhoneRegistered = phone.length > 0;
-
-      if (hasPhoneRegistered) {
-        // Usuario ya tiene teléfono registrado, login completo
-        saveUser(data.user, data.token);
-      } else {
-        // Usuario necesita registrar teléfono
+      const phone = USE_NEW_API ? (data.data.phone || '') : (data?.user?.taxpayer_cellphone || '');
+      
+      // ✅ FLUJO CORRECTO: En onboarding SIEMPRE debe pasar por phoneSignupScreen
+      // para capturar y verificar el teléfono REAL del usuario
+      if (isOnboarding) {
+        // TODOS los usuarios en onboarding necesitan registrar su teléfono REAL
         props.navigation.navigate('phoneSignupScreen', {
-          userId: data.user.id,
-          token: data.token,
-          user: data.user,
+          userId: normalizedData.user.id,
+          token: normalizedData.token,
+          user: normalizedData.user,
           isOnboarding: true,
           fullName: fullName,
         });
+      } else {
+        // Solo para login de usuarios existentes (no onboarding)
+        saveUser(normalizedData.user, normalizedData.token);
       }
     } catch (e) {
       console.error('❌ Error verificando OTP:', e);

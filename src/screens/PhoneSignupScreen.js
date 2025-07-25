@@ -21,6 +21,8 @@ import NeuButton from './../components/NeuButton';
 import { useIsFocused } from '@react-navigation/native';
 import amplitudeService from '../utils/analytics/amplitude';
 import { colors, typography, spacing, borderRadius } from '../theme';
+import apiSelector from '../lib/apiSelector';
+import { USE_NEW_API } from '../lib/config';
 
 const screenHeight = Math.round(Dimensions.get('window').height);
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -70,10 +72,21 @@ export default function PhoneSignupScreen(props) {
       // Keep the original phone number with * if present
       const e164phone = `+52${cellphone}`;
       
-      // Use the direct API calls that the backend expects
+      console.log('🔄 PhoneSignupScreen: Enviando OTP a teléfono:', {
+        phone: e164phone,
+        hasToken: !!token,
+        useNewAPI: USE_NEW_API
+      });
+      
       if (token) {
         // With token - merge flow
-        await API.authMergeCellphoneIntent(e164phone, token);
+        if (USE_NEW_API) {
+          // ✅ Nueva API: Actualizar teléfono del usuario
+          await apiSelector.updateUserPhone(token, e164phone);
+        } else {
+          // ✅ API antigua: Merge flow
+          await API.authMergeCellphoneIntent(e164phone, token);
+        }
       } else {
         // Without token - use find_or_create cellphone endpoint
         await API.authCellphone(e164phone);

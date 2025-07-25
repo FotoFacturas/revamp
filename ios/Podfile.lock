@@ -162,11 +162,11 @@ PODS:
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
   - PromisesObjC (2.4.0)
-  - PurchasesHybridCommon (13.37.0):
-    - RevenueCat (= 5.29.0)
-  - PurchasesHybridCommonUI (13.37.0):
-    - PurchasesHybridCommon (= 13.37.0)
-    - RevenueCatUI (= 5.29.0)
+  - PurchasesHybridCommon (14.2.0):
+    - RevenueCat (= 5.32.0)
+  - PurchasesHybridCommonUI (14.2.0):
+    - PurchasesHybridCommon (= 14.2.0)
+    - RevenueCatUI (= 5.32.0)
   - RCT-Folly (2024.10.14.00):
     - boost
     - DoubleConversion
@@ -1559,7 +1559,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-video (6.15.0):
+  - react-native-video (6.16.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1572,7 +1572,7 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-video/Video (= 6.15.0)
+    - react-native-video/Video (= 6.16.1)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1581,7 +1581,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-video/Fabric (6.15.0):
+  - react-native-video/Fabric (6.16.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1602,7 +1602,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-video/Video (6.15.0):
+  - react-native-video/Video (6.16.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1896,9 +1896,9 @@ PODS:
     - React-logger
     - React-perflogger
     - React-utils (= 0.76.9)
-  - RevenueCat (5.29.0)
-  - RevenueCatUI (5.29.0):
-    - RevenueCat (= 5.29.0)
+  - RevenueCat (5.32.0)
+  - RevenueCatUI (5.32.0):
+    - RevenueCat (= 5.32.0)
   - RNCAsyncStorage (2.2.0):
     - DoubleConversion
     - glog
@@ -1933,7 +1933,7 @@ PODS:
     - Firebase/RemoteConfig (= 11.11.0)
     - React-Core
     - RNFBApp
-  - RNGestureHandler (2.26.0):
+  - RNGestureHandler (2.27.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1954,13 +1954,13 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNPaywalls (8.11.6):
-    - PurchasesHybridCommonUI (= 13.37.0)
+  - RNPaywalls (8.11.10):
+    - PurchasesHybridCommonUI (= 14.2.0)
     - React-Core
-  - RNPurchases (8.11.6):
-    - PurchasesHybridCommon (= 13.37.0)
+  - RNPurchases (8.11.10):
+    - PurchasesHybridCommon (= 14.2.0)
     - React-Core
-  - RNScreens (4.11.1):
+  - RNScreens (4.12.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1981,9 +1981,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNScreens/common (= 4.11.1)
+    - RNScreens/common (= 4.12.0)
     - Yoga
-  - RNScreens/common (4.11.1):
+  - RNScreens/common (4.12.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2384,8 +2384,8 @@ SPEC CHECKSUMS:
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  PurchasesHybridCommon: 1583b4532763b795f8ae61913102d6ef9ed556a8
-  PurchasesHybridCommonUI: 5b81191e03bb0e50625901d1515a4723beee5d0e
+  PurchasesHybridCommon: f1650b33e9a1dd04d5e8a40dfe757f39e63f935c
+  PurchasesHybridCommonUI: c573749b8317555ddda02d454d58f7a108462e79
   RCT-Folly: ea9d9256ba7f9322ef911169a9f696e5857b9e17
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
   RCTRequired: ca91e5dd26b64f577b528044c962baf171c6b716
@@ -2421,7 +2421,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: dbc35687199a8bf89514e09b6b105557f9f63162
   react-native-image-resizer: 17b2d73c030975b6543395c7e7368bc8774c5efa
   react-native-safe-area-context: 7952193294b10a6a99a9546de0db0c8496210ffa
-  react-native-video: eae250f36f196913fdfacd3f502030d6d396fc5c
+  react-native-video: bc6104529a6fde35127a1625b30d557412fdb70d
   React-nativeconfig: 8efdb1ef1e9158c77098a93085438f7e7b463678
   React-NativeModulesApple: cebca2e5320a3d66e123cade23bd90a167ffce5e
   React-perflogger: 72e653eb3aba9122f9e57cf012d22d2486f33358
@@ -2449,22 +2449,22 @@ SPEC CHECKSUMS:
   React-utils: ed818f19ab445000d6b5c4efa9d462449326cc9f
   ReactCodegen: f853a20cc9125c5521c8766b4b49375fec20648b
   ReactCommon: 300d8d9c5cb1a6cd79a67cf5d8f91e4d477195f9
-  RevenueCat: 5fa12c42c14b390dd2423897e925f407f474b8fa
-  RevenueCatUI: fd24e43324c5e3711e5b5cba18eadd0fe2f023d0
+  RevenueCat: 7e1d0768fb287c9983173c9b28e39ccbeeb828a9
+  RevenueCatUI: 61ddba6f94803f9b79c470ffe1e8b81d807c11ce
   RNCAsyncStorage: 87a74d13ba0128f853817e45e21c4051e1f2cd45
   RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
   RNFBAnalytics: 03c83ba4617a3754c99e66267983efcc908932a9
   RNFBApp: a448037d2df74af9d374a0b765be12ff1e844dc0
   RNFBRemoteConfig: 4eb5fc9f21dc324153c7d3f5b48c935ab9031876
-  RNGestureHandler: 262397ce56c7f34c72e2363681ca285a1de3e3e8
-  RNPaywalls: 698f8efb5bfd3d05cab130725964d5ba99f69aa7
-  RNPurchases: 37be98e6ea227ed59df84eba08b1c52cf42367c7
-  RNScreens: da08089f1b06c3e0a459545ee2e0eb94ea18a80b
+  RNGestureHandler: 773d7b904a2b67d26fc6c3bb6d92cdf49df850b1
+  RNPaywalls: d171a521a45a58e4fa647d80001266cfc5b3b0e5
+  RNPurchases: f465d1bc4cc84c2ea46c528930ac602275e047b6
+  RNScreens: a54ba59dc9dd53833a6c3db1dc210668245aa233
   RNSVG: 43aff28bae846abe9c45625fe8b4816b7ac73ffd
   RNVectorIcons: 3bf5f38dcb1aaf587c4101e9f3fcad5c8f5a88b2
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 
-PODFILE CHECKSUM: c0577fc930b3cdf1e46595a1033a5a18ddc44c46
+PODFILE CHECKSUM: 6727a465ad2b70fbf1dbb4dc1b6ae9281435536f
 
 COCOAPODS: 1.16.2

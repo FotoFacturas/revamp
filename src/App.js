@@ -13,6 +13,7 @@ import retentionAdvanced from './utils/retention/retentionAdvanced';
 import retentionManager from './utils/retention';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Logger } from './utils/core';
+import 'react-native-screens';
 
 
 const SplashScreen = React.lazy(() => import('./screens/SplashScreen'));

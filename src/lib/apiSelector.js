@@ -306,6 +306,21 @@ const apiSelector = {
     }
   },
 
+  // ✅ requestVerifyOtpEmail: Solicitar OTP para verificación de email
+  requestVerifyOtpEmail: async (token) => {
+    console.log('🔄 ApiSelector.requestVerifyOtpEmail: Iniciando');
+    
+    if (USE_NEW_API) {
+      console.log('🆕 ApiSelector.requestVerifyOtpEmail: Usando nueva API');
+      const result = await newApiWrapper.requestVerifyOtpEmail(token);
+      console.log('✅ ApiSelector.requestVerifyOtpEmail: Nueva API exitosa');
+      return result;
+    } else {
+      console.log('🔄 ApiSelector.requestVerifyOtpEmail: API antigua no implementada');
+      throw new Error('requestVerifyOtpEmail no disponible para API antigua');
+    }
+  },
+
   // ✅ getUserData: Obtener datos completos del usuario
   getUserData: async (token) => {
     console.log('🔄 ApiSelector.getUserData: Iniciando');
@@ -318,6 +333,20 @@ const apiSelector = {
     } else {
       console.log('🔄 ApiSelector.getUserData: API antigua no implementada');
       throw new Error('getUserData no disponible para API antigua');
+    }
+  },
+
+  // ✅ updateUser: Actualizar datos del usuario (email, teléfono, etc.)
+  updateUser: async (token, updateData) => {
+    console.log('🔄 ApiSelector.updateUser: Iniciando con', Object.keys(updateData));
+    if (USE_NEW_API) {
+      console.log('🆕 ApiSelector.updateUser: Usando nueva API');
+      const result = await newApiWrapper.updateUser(token, updateData);
+      console.log('✅ ApiSelector.updateUser: Nueva API exitosa');
+      return result;
+    } else {
+      console.log('🔄 ApiSelector.updateUser: API antigua no implementada');
+      throw new Error('updateUser no disponible para API antigua');
     }
   },
 

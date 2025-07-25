@@ -114,29 +114,10 @@ export default function EmailOTPScreen(props) {
         
         if (USE_NEW_API) {
           if (isOnboarding) {
-            // ✅ SIGNUP: Solo login
-            console.log('🆕 Signup flow: Login');
+            // ✅ SIGNUP: Solo login (email se considera verificado al hacer login exitoso)
+            console.log('🆕 Signup flow: Solo login');
             data = await apiSelector.loginOtpEmail(userEmail, code);
-            
-            // Solicitar OTP para verificación
-            console.log('📧 Solicitando OTP para verificación de email...');
-            await apiSelector.requestVerifyOtpEmail(data.data.token);
-            
-            // Cambiar al paso de verificación
-            setUserData(data.data);
-            setUserToken(data.data.token);
-            setVerificationStep('verify');
-            setCode(''); // Limpiar código para el nuevo OTP
-            setSpinner(false);
-            
-            Alert.alert(
-              'Código de verificación enviado',
-              'Te hemos enviado un nuevo código para verificar tu email. Por favor ingrésalo.',
-              [{ text: 'OK' }]
-            );
-            
-            return; // Importante: salir aquí
-            
+            console.log('✅ Login exitoso - Email considerado verificado');
           } else {
             // ✅ LOGIN: Solo login
             console.log('🆕 Login flow: Solo login');
@@ -172,42 +153,7 @@ export default function EmailOTPScreen(props) {
         
       } else if (verificationStep === 'verify') {
         // ========== PASO 2: VERIFICAR EMAIL ==========
-        console.log('🔄 Paso 2: Verificando email');
-        
-        try {
-          await apiSelector.validateOtpEmail(userToken, code);
-          console.log('✅ Email verificado exitosamente');
-          
-          // Track successful verification
-          amplitudeService.trackEvent('Email_Verification_Completed', {
-            full_name: fullName,
-            api_version: 'new'
-          });
-          
-          // Continuar con el flujo normal de onboarding
-          const normalizedData = {
-            user: {
-              id: userData.userId,
-              taxpayer_cellphone: userData.phone || '',
-            },
-            token: userToken
-          };
-
-          setSpinner(false);
-
-          // Ir a phoneSignupScreen como en el flujo original
-          props.navigation.navigate('phoneSignupScreen', {
-            userId: normalizedData.user.id,
-            token: normalizedData.token,
-            user: normalizedData.user,
-            isOnboarding: true,
-            fullName: fullName,
-          });
-          
-        } catch (emailVerifyError) {
-          console.error('❌ Error verificando email:', emailVerifyError);
-          throw emailVerifyError;
-        }
+        // (Este paso ya no se usa en el nuevo flujo)
       }
 
     } catch (e) {

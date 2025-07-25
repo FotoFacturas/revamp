@@ -235,7 +235,8 @@ class NewApiWrapper {
       throw new Error('MISSING_TOKEN: Token de sesión requerido');
     }
     
-    return this.authenticatedRequest('/MobileV1Security/RequestVerifyOtpEmail', {
+    // ✅ URL CORRECTA (según swagger):
+    return this.authenticatedRequest('/Api/MobileV1Security/RequestVerifyOtpEmail', {
       method: 'POST'
     }, token);
   }

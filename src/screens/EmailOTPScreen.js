@@ -50,8 +50,7 @@ export default function EmailOTPScreen(props) {
   const isFocused = useIsFocused();
 
   // ✅ Dígitos según API: Nueva = 6, Antigua = 5
-  const expectedDigits = USE_NEW_API ? 6 : 5;
-  const disabled = code.length < expectedDigits;
+  const disabled = code.length < 6;
 
   const _userEmail = props.route?.params?.email || '';
   const userEmail = _userEmail.replace('*', '');
@@ -66,29 +65,29 @@ export default function EmailOTPScreen(props) {
         has_phone: userHasPhone,
         is_onboarding: isOnboarding,
         has_full_name: !!fullName,
-        code_length_expected: expectedDigits,
+        code_length_expected: 6,
         api_version: USE_NEW_API ? 'new' : 'old'
       });
     }
-  }, [isFocused, userHasPhone, isOnboarding, fullName, expectedDigits]);
+  }, [isFocused, userHasPhone, isOnboarding, fullName, USE_NEW_API]);
 
   // Debug log para verificar datos recibidos
   React.useEffect(() => {
     console.log('📧 EmailOTPScreen - Configuración:', {
       USE_NEW_API,
-      expectedDigits,
+      expectedDigits: 6,
       userEmail,
       userHasPhone,
       isOnboarding,
       fullName,
       routeParams: props.route?.params
     });
-  }, [expectedDigits, userEmail, userHasPhone, isOnboarding, fullName, props.route?.params]);
+  }, [USE_NEW_API, userEmail, userHasPhone, isOnboarding, fullName, props.route?.params]);
 
   React.useEffect(() => {
     if (!isMounted()) return;
-    if (code.length === expectedDigits) handleVerification();
-  }, [code, expectedDigits]);
+    if (code.length === 6) handleVerification();
+  }, [code]);
 
   const handleVerification = async () => {
     setSpinner(true);
@@ -98,7 +97,7 @@ export default function EmailOTPScreen(props) {
         email: userEmail,
         code: code,
         length: code.length,
-        expected: expectedDigits,
+        expected: 6,
         api: USE_NEW_API ? 'nueva' : 'antigua'
       });
 
@@ -176,7 +175,7 @@ export default function EmailOTPScreen(props) {
         error_message: e.message || 'unknown_error',
         full_name: fullName,
         code_length: code.length,
-        expected_length: expectedDigits,
+        expected_length: 6,
         api_version: USE_NEW_API ? 'new' : 'old'
       });
 
@@ -222,7 +221,7 @@ export default function EmailOTPScreen(props) {
       
       Alert.alert(
         'Código enviado',
-        `Te hemos enviado un nuevo código de ${expectedDigits} dígitos a tu correo.`,
+        `Te hemos enviado un nuevo código de 6 dígitos a tu correo.`,
         [{ text: 'OK' }]
       );
       
@@ -289,7 +288,7 @@ export default function EmailOTPScreen(props) {
             <View style={styles.copyView}>
               <Text style={styles.copyTextHeadline}>Revisa tu correo</Text>
               <Text style={styles.copyTextByline}>
-                Enviamos un código de {expectedDigits} dígitos a tu correo{' '}
+                Enviamos un código de 6 dígitos a tu correo{' '}
                 <Text style={{ fontWeight: typography?.fontWeight?.bold || '700' }}>{userEmail}</Text>. 
                 Escribe el código de acceso a continuación.
               </Text>
@@ -305,18 +304,25 @@ export default function EmailOTPScreen(props) {
                 ref={pinInputRef}
                 cellSize={50}
                 cellSpacing={8}
-                codeLength={expectedDigits}
+                codeLength={6}
                 value={code}
                 onTextChange={(text) => {
                   setTimeout(() => {
-                    setCode(text);
+                    // Detectar si se pegó texto (cambio de longitud > 1)
+                    if (text.length > code.length + 1) {
+                      // Se pegó texto, tomar solo los primeros 6 dígitos
+                      const pastedCode = text.replace(/\D/g, '').substring(0, 6);
+                      setCode(pastedCode);
+                    } else {
+                      setCode(text);
+                    }
                     // Track when user inputs code
                     if (text.length % 2 === 0) {
                       amplitudeService.trackEvent('Input_Changed', {
                         screen: 'email_otp',
                         field: 'code',
                         length: text.length,
-                        expected_length: expectedDigits
+                        expected_length: 6
                       });
                     }
                   }, 0);
@@ -354,6 +360,10 @@ export default function EmailOTPScreen(props) {
                 autoFocus={false}
                 keyboardType="number-pad"
                 maskDelay={0}
+                autoCapitalize="none"
+                textContentType="oneTimeCode"
+                editable={true}
+                selectTextOnFocus={true}
                 onFulfill={() => {
                   pinInputRef.current?.blur();
                 }}

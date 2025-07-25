@@ -306,6 +306,21 @@ const apiSelector = {
     }
   },
 
+  // ✅ getUserData: Obtener datos completos del usuario
+  getUserData: async (token) => {
+    console.log('🔄 ApiSelector.getUserData: Iniciando');
+    
+    if (USE_NEW_API) {
+      console.log('🆕 ApiSelector.getUserData: Usando nueva API');
+      const result = await newApiWrapper.getUserData(token);
+      console.log('✅ ApiSelector.getUserData: Nueva API exitosa');
+      return result;
+    } else {
+      console.log('🔄 ApiSelector.getUserData: API antigua no implementada');
+      throw new Error('getUserData no disponible para API antigua');
+    }
+  },
+
   // TODO: Agregar más métodos según se vayan migrando las funcionalidades
   // requestLoginOtpPhone: async (phone) => { ... },
   // loginOtpPhone: async (phone, otp) => { ... },

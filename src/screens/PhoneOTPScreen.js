@@ -96,7 +96,23 @@ export default function PhoneOTPScreen(props) {
       if (USE_NEW_API) {
         // ✅ Nueva API: Validar OTP de teléfono
         console.log('🆕 Usando nueva API para validar OTP de teléfono');
-        data = await apiSelector.validateOtpPhone(token, code);
+        const validateResult = await apiSelector.validateOtpPhone(token, code);
+        
+        // Para nueva API, obtener datos actualizados del usuario
+        console.log('📋 Obteniendo datos actualizados del usuario después de verificar...');
+        const userDataResult = await apiSelector.getUserData(token);
+        
+        // Normalizar datos para mantener compatibilidad
+        data = {
+          user: {
+            id: userDataResult.data.userId,
+            taxpayer_identifier: userDataResult.data.userTaxInfo?.[0]?.identifier || '',
+            csf_pdf_url: userDataResult.data.userTaxInfo?.[0]?.csfPdfUrl || ''
+          },
+          token: token
+        };
+        
+        console.log('📋 Datos normalizados:', data);
       } else {
         // ✅ API antigua
         console.log('🔄 Usando API antigua para validar OTP de teléfono');

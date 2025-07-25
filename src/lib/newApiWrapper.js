@@ -247,7 +247,7 @@ class NewApiWrapper {
       throw new Error('MISSING_PARAMS: Token y OTP requeridos');
     }
     
-    return this.authenticatedRequest('/MobileV1Security/ValidateOtpEmail', {
+    return this.authenticatedRequest('/Api/MobileV1Security/ValidateOtpEmail', {
       method: 'POST',
       body: JSON.stringify({ otp })
     }, token);

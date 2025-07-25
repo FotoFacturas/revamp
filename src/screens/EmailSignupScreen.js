@@ -115,114 +115,64 @@ export default function EmailSignupScreen(props) {
     const emailRegex = /^[^@]+@[^@]+\.[^@]+$/;
     if (!emailRegex.test(email)) {
       alert('Ingresa un correo válido');
-      amplitudeService.trackEvent('Email_Validation_Failed', {
-        reason: 'invalid_format'
-      });
-      return;
-    }
-
-    // ✅ Validar que tengamos fullName
-    if (!fullName) {
-      Alert.alert(
-        'Error',
-        'No se recibió el nombre completo. Regresa y vuelve a intentar.',
-        [{ text: 'OK', onPress: () => props.navigation.goBack() }]
-      );
       return;
     }
 
     setSpinner(true);
 
     try {
-      // ✅ MIGRACIÓN FASE 1.4: Intentar nueva API primero solo si está habilitada
-      console.log('🔄 Creando usuario con datos:', {
-        email,
-        fullName
-      });
+      const { isUpdate, tempAccount, tempEmail } = props.route?.params || {};
+      
+      if (isUpdate && tempAccount && tempEmail) {
+        // ✅ FLUJO ELEGANTE: Solicitar OTP al email temporal (no al real)
+        console.log('🔄 Flujo elegante: Solicitando OTP al email temporal:', tempEmail);
+        
+        await apiSelector.requestLoginOtpEmail(tempEmail);
+        
+        console.log('✅ OTP solicitado al email temporal');
+        
+        setSpinner(false);
+        
+        // Navegar a EmailOTPScreen para login con email temporal
+        props.navigation.navigate('emailOTPScreen', {
+          email: tempEmail, // ← Email temporal para hacer login
+          realEmail: email, // ← Email real para actualizar después
+          fullName: fullName,
+          isOnboarding: true,
+          isUpdate: true,
+          tempAccount: true
+        });
+        
+      } else {
+        // ✅ FLUJO ANTERIOR: Mantener como fallback
+        console.log('🔄 Usando flujo anterior (fallback)');
+        
+        const userData = {
+          fullName: fullName,
+          email: email,
+          phone: null,
+          phoneCode: null,
+          isEmailVerified: false,
+          isPhoneVerified: false
+        };
 
-      // Preparar datos para nueva API según swagger
-      const userData = {
-        fullName: fullName,
-        email: email,
-        phone: null, // Por ahora null, se agregará después
-        phoneCode: null, // Por ahora null, se agregará después
-        isEmailVerified: false,
-        isPhoneVerified: false
-      };
-
-      console.log('📤 Intentando apiSelector.addUser:', userData);
-
-      // ✅ Usar el selector que manejará nueva API o fallback automáticamente
-      const createUserResult = await apiSelector.addUser(userData);
-
-      console.log('✅ Usuario creado/procesado exitosamente:', createUserResult);
-      setSpinner(false);
-
-      // Track successful user creation
-      amplitudeService.trackEvent('User_Created_New_Flow', {
-        full_name: fullName,
-        email: email,
-        success: true
-      });
-
-      // ✅ Ahora enviar OTP - el resultado puede venir del addUser o del authEmail
-      console.log('📧 Procesando OTP con resultado:', createUserResult);
-
-      // Track successful OTP sending
-      amplitudeService.trackEvent('Email_OTP_Sent', {
-        has_phone: createUserResult.user_has_phone || false,
-        is_existing_user: !!createUserResult.user_first_name,
-        created_with_new_flow: true,
-        full_name: fullName
-      });
-
-      props.navigation.navigate('emailOTPScreen', {
-        email: email.replace('*', ''),
-        isOnboarding: true,
-        user_has_phone: createUserResult.user_has_phone,
-        user_first_name: createUserResult.user_first_name || fullName,
-        fullName: fullName, // ✅ Pasar fullName al siguiente screen
-      });
+        const createUserResult = await apiSelector.addUser(userData);
+        
+        setSpinner(false);
+        
+        props.navigation.navigate('emailOTPScreen', {
+          email: email.replace('*', ''),
+          isOnboarding: true,
+          user_has_phone: createUserResult.user_has_phone,
+          user_first_name: createUserResult.user_first_name || fullName,
+          fullName: fullName,
+        });
+      }
 
     } catch (e) {
-      console.error('❌ Error en flujo completo:', e);
+      console.error('❌ Error en flujo de email:', e);
       setSpinner(false);
-
-      // Track error 
-      amplitudeService.trackEvent('Email_Signup_Failed', {
-        error_message: e.message,
-        full_name: fullName,
-        email: email
-      });
-
-      // Manejar errores existentes
-      if (e.message.includes('Multiple accounts')) {
-        Alert.alert(
-          'Cuenta Empresarial',
-          'Esta cuenta ya existe, favor de hacer login con tu teléfono registrado.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setTimeout(() => {
-                  props.navigation.goBack();
-                }, 50);
-                setTimeout(() => {
-                  props.navigation.navigate('phoneLoginScreen');
-                }, 500);
-              },
-            },
-          ],
-          { cancelable: false },
-        );
-      } else {
-        Alert.alert(
-          'Error de conexión',
-          'No se pudo procesar el registro. Verifica tu conexión e inténtalo de nuevo.',
-          [{ text: 'OK' }],
-          { cancelable: false },
-        );
-      }
+      Alert.alert('Error', 'No se pudo procesar el email. Intenta de nuevo.');
     }
   };
 

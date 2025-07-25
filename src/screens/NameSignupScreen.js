@@ -17,6 +17,7 @@ import ProgressSteps from '../components/ProgressSteps';
 import NeuButton from './../components/NeuButton';
 import amplitudeService from '../utils/analytics/amplitude';
 import { colors, typography, spacing, borderRadius } from '../theme';
+import apiSelector from '../lib/apiSelector';
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
@@ -74,19 +75,48 @@ export default function NameSignupScreen(props) {
     }
   }, [firstName, lastName]);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!firstName.trim() || !lastName.trim()) {
       Alert.alert('Campos requeridos', 'Por favor ingresa tu nombre y apellido.');
-      amplitudeService.trackEvent('Name_Validation_Failed', {
-        reason: 'empty_fields'
-      });
       return;
     }
-    const fullName = `${firstName.trim()} ${lastName.trim()}`;
-    amplitudeService.trackEvent('Name_Entered', {
-      fullNameLength: fullName.length
-    });
-    props.navigation.navigate('emailSignupScreen', { fullName });
+    
+    setSpinner(true);
+    
+    try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`;
+      const tempEmail = `temp_${Date.now()}@fotofacturas.temp`;
+      
+      // Crear cuenta temporal con email y teléfono temporales
+      const tempUserData = {
+        fullName: fullName,
+        email: tempEmail,
+        phone: null, // Se generará automáticamente
+        phoneCode: null,
+        isEmailVerified: false,
+        isPhoneVerified: false
+      };
+
+      console.log('🔄 Creando cuenta temporal:', tempUserData);
+      const createResult = await apiSelector.addUser(tempUserData);
+      
+      console.log('✅ Cuenta temporal creada:', createResult);
+      
+      setSpinner(false);
+      
+      // ✅ IMPORTANTE: Pasar el tempEmail que se usó para crear la cuenta
+      props.navigation.navigate('emailSignupScreen', { 
+        fullName,
+        tempEmail: tempEmail, // ← Email temporal para hacer login
+        isUpdate: true,
+        tempAccount: true
+      });
+      
+    } catch (error) {
+      console.error('❌ Error creando cuenta temporal:', error);
+      setSpinner(false);
+      Alert.alert('Error', 'No se pudo crear la cuenta. Intenta de nuevo.');
+    }
   };
 
   return (

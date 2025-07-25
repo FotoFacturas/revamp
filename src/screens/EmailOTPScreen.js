@@ -100,36 +100,94 @@ export default function EmailOTPScreen(props) {
     setSpinner(true);
 
     try {
+      const { isUpdate, tempAccount, realEmail } = props.route?.params || {};
+      
       console.log('🔄 Verificando OTP:', {
-        email: userEmail,
+        email: userEmail, // Email temporal
+        realEmail: realEmail, // Email real
         code: code,
-        length: code.length,
-        step: verificationStep,
-        api: USE_NEW_API ? 'nueva' : 'antigua'
+        isUpdate: isUpdate,
+        tempAccount: tempAccount
       });
 
-      if (verificationStep === 'login') {
-        // ========== PASO 1: LOGIN ==========
-        let data;
+      if (isUpdate && tempAccount && realEmail) {
+        // ✅ FLUJO ELEGANTE PASO 1: Login con email temporal
+        console.log('🆕 Flujo elegante: Login con email temporal');
         
+        // 1. Login con email temporal para obtener token
+        const loginData = await apiSelector.loginOtpEmail(userEmail, code);
+        const token = loginData.data.token;
+        const userId = loginData.data.userId;
+        
+        console.log('✅ Login temporal exitoso, token obtenido');
+        
+        // 2. Actualizar email a uno real
+        await apiSelector.updateUser(token, { email: realEmail });
+        console.log('✅ Email actualizado a:', realEmail);
+        
+        // 3. Solicitar OTP para verificar el email real
+        await apiSelector.requestVerifyOtpEmail(token);
+        console.log('✅ OTP de verificación enviado al email real');
+        
+        setSpinner(false);
+        
+        // 4. Mostrar mensaje y navegar a verificar email real
+        Alert.alert(
+          'Email actualizado',
+          `Hemos enviado un código de verificación a ${realEmail}. Por favor ingrésalo.`,
+          [{ 
+            text: 'OK', 
+            onPress: () => {
+              // Navegar a verificar el email real
+              props.navigation.replace('emailOTPScreen', {
+                email: realEmail,
+                fullName: fullName,
+                token: token,
+                userId: userId,
+                isOnboarding: true,
+                isVerifyingReal: true
+              });
+            }
+          }]
+        );
+        
+      } else if (props.route?.params?.isVerifyingReal) {
+        // ✅ FLUJO ELEGANTE PASO 2: Verificar email real
+        console.log('🔄 Verificando email real');
+        
+        const { token, userId } = props.route?.params || {};
+        
+        await apiSelector.validateOtpEmail(token, code);
+        console.log('✅ Email real verificado exitosamente');
+        
+        setSpinner(false);
+        
+        // Continuar al flujo de teléfono
+        props.navigation.navigate('phoneSignupScreen', {
+          userId: userId,
+          token: token,
+          fullName: fullName,
+          isOnboarding: true,
+          isUpdate: true
+        });
+        
+      } else {
+        // ✅ FLUJO ANTERIOR: Mantener como fallback
+        console.log('🔄 Usando flujo anterior');
+        
+        let data;
         if (USE_NEW_API) {
           if (isOnboarding) {
-            // ✅ SIGNUP: Solo login (email se considera verificado al hacer login exitoso)
             console.log('🆕 Signup flow: Solo login');
             data = await apiSelector.loginOtpEmail(userEmail, code);
             console.log('✅ Login exitoso - Email considerado verificado');
           } else {
-            // ✅ LOGIN: Solo login
             console.log('🆕 Login flow: Solo login');
             data = await apiSelector.loginOtpEmail(userEmail, code);
           }
         } else {
-          // ✅ API antigua: 5 dígitos
           data = await API.authVerifyEmailOTP(userEmail, code);
         }
-
-        // Para login normal (no onboarding), continuar con el flujo existente
-        console.log('✅ OTP verificado exitosamente:', data);
 
         const normalizedData = USE_NEW_API ? {
           user: {
@@ -139,7 +197,6 @@ export default function EmailOTPScreen(props) {
           token: data.data.token
         } : data;
 
-        // Track successful verification
         amplitudeService.trackEvent('Email_OTP_Verified', {
           has_phone: USE_NEW_API ? !data.data.phone : !data?.user?.taxpayer_cellphone,
           is_onboarding: isOnboarding,
@@ -149,35 +206,39 @@ export default function EmailOTPScreen(props) {
         });
 
         setSpinner(false);
-        saveUser(normalizedData.user, normalizedData.token);
-        
-      } else if (verificationStep === 'verify') {
-        // ========== PASO 2: VERIFICAR EMAIL ==========
-        // (Este paso ya no se usa en el nuevo flujo)
+
+        if (isOnboarding) {
+          props.navigation.navigate('phoneSignupScreen', {
+            userId: normalizedData.user.id,
+            token: normalizedData.token,
+            user: normalizedData.user,
+            isOnboarding: true,
+            fullName: fullName,
+          });
+        } else {
+          saveUser(normalizedData.user, normalizedData.token);
+        }
       }
 
     } catch (e) {
       console.error('❌ Error verificando OTP:', e);
-
-      // Track error
+      setSpinner(false);
+      
       amplitudeService.trackEvent('Email_OTP_Verification_Failed', {
         error_message: e.message || 'unknown_error',
         full_name: fullName,
         code_length: code.length,
-        step: verificationStep,
         api_version: USE_NEW_API ? 'new' : 'old'
       });
 
       Alert.alert(
         'Código incorrecto',
         'El código no es válido. Por favor intenta de nuevo.',
-        [{ text: 'OK', onPress: () => setSpinner(false) }],
+        [{ text: 'OK' }],
         { cancelable: false }
       );
       
-      // Limpiar código para que el usuario pueda reintentar
       setCode('');
-      return;
     }
 
     setSpinner(false);

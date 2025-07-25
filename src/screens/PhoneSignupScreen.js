@@ -54,82 +54,61 @@ export default function PhoneSignupScreen(props) {
     setSpinner(true);
 
     if (cellphone.length < 10) {
-      Alert.alert(
-        'Error de verificación',
-        'Ingresa un número de celular válido',
-        [{ text: 'OK', onPress: () => setSpinner(false) }],
-        { cancelable: false },
-      );
-      
-      amplitudeService.trackEvent('Phone_Validation_Failed', {
-        reason: 'invalid_format'
-      });
-      
+      Alert.alert('Error de verificación', 'Ingresa un número válido');
+      setSpinner(false);
       return;
     }
 
     try {
-      // Keep the original phone number with * if present
       const e164phone = `+52${cellphone}`;
+      const { token, isUpdate } = props.route?.params || {};
       
-      console.log('🔄 PhoneSignupScreen: Enviando OTP a teléfono:', {
+      console.log('🔄 Procesando teléfono:', {
         phone: e164phone,
         hasToken: !!token,
-        useNewAPI: USE_NEW_API
+        isUpdate: isUpdate
       });
       
-      if (token) {
-        // With token - merge flow
-        if (USE_NEW_API) {
-          // ✅ Nueva API: Actualizar teléfono del usuario
+      if (isUpdate && token) {
+        // ✅ FLUJO ELEGANTE: Actualizar teléfono
+        console.log('🆕 Flujo elegante: Actualizando teléfono');
+        
+        // Actualizar teléfono del usuario
+        await apiSelector.updateUser(token, { 
+          phone: cellphone,
+          phoneCode: '52'
+        });
+        
+        // Solicitar OTP para verificar el nuevo teléfono
+        await apiSelector.requestVerifyOtpPhone(token);
+        
+        console.log('✅ Teléfono actualizado y OTP solicitado');
+        
+      } else {
+        // ✅ FLUJO ANTERIOR: updateUserPhone existente
+        console.log('🔄 Usando flujo anterior');
+        
+        if (token) {
           await apiSelector.updateUserPhone(token, e164phone);
         } else {
-          // ✅ API antigua: Merge flow
-          await API.authMergeCellphoneIntent(e164phone, token);
+          await API.authCellphone(e164phone);
         }
-      } else {
-        // Without token - use find_or_create cellphone endpoint
-        await API.authCellphone(e164phone);
       }
       
-      // Track successful OTP sending
-      amplitudeService.trackEvent('Phone_OTP_Sent', {
-        phone_length: cellphone.length,
-        has_asterisk: cellphone.includes('*')
-      });
-      
       setSpinner(false);
+      
       props.navigation.navigate('phoneOtpScreen', {
         cellphone: e164phone.replace(/\*/g, ''),
         user: user,
         token: token,
         isOnboarding: true,
+        isUpdate: isUpdate
       });
+      
     } catch (e) {
-      console.warn('Error on PhoneVerifyScreen', e);
-      
-      // Track error
-      amplitudeService.trackEvent('Phone_OTP_Failed', {
-        error_message: e.message,
-        error_type: e.message && e.message.includes('verification_04') ? 'phone_in_use' : 'other'
-      });
-      
-      if (e.message.includes('verification_04')) {
-        Alert.alert(
-          'Celular Registrado',
-          'Ese teléfono ya está en uso para otra cuenta.\n\nEscoge otro número o contacta a soporte +525522613142',
-          [{ text: 'OK', onPress: () => setSpinner(false) }],
-          { cancelable: false },
-        );
-      } else {
-        Alert.alert(
-          'Error de verificación',
-          'Por favor intenta nuevamente',
-          [{ text: 'OK', onPress: () => setSpinner(false) }],
-          { cancelable: false },
-        );
-      }
-      return;
+      console.error('❌ Error procesando teléfono:', e);
+      setSpinner(false);
+      Alert.alert('Error', 'No se pudo procesar el teléfono.');
     }
   };
 

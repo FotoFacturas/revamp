@@ -260,7 +260,7 @@ class NewApiWrapper {
       throw new Error('MISSING_TOKEN: Token de sesión requerido');
     }
     
-    return this.authenticatedRequest('/RequestVerifyOtpPhone', {
+    return this.authenticatedRequest('/Api/MobileV1Security/RequestVerifyOtpPhone', {
       method: 'POST'
     }, token);
   }
@@ -272,7 +272,7 @@ class NewApiWrapper {
       throw new Error('MISSING_PARAMS: Token y OTP requeridos');
     }
     
-    return this.authenticatedRequest('/ValidateOtpPhone', {
+    return this.authenticatedRequest('/Api/MobileV1Security/ValidateOtpPhone', {
       method: 'POST',
       body: JSON.stringify({ otp })
     }, token);
@@ -288,7 +288,7 @@ class NewApiWrapper {
       throw new Error('MISSING_TOKEN: Token de sesión requerido');
     }
     
-    return this.authenticatedRequest('/GetUserData', {
+    return this.authenticatedRequest('/Api/MobileV1User/GetUserData', {
       method: 'GET'
     }, token);
   }
@@ -300,7 +300,7 @@ class NewApiWrapper {
       throw new Error('MISSING_TOKEN: Token de sesión requerido');
     }
     
-    return this.authenticatedRequest('/UpdateUser', {
+    return this.authenticatedRequest('/Api/MobileV1User/UpdateUser', {
       method: 'PUT',
       body: JSON.stringify(updateData)
     }, token);

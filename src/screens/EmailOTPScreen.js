@@ -105,8 +105,25 @@ export default function EmailOTPScreen(props) {
       let data;
       
       if (USE_NEW_API) {
-        // ✅ Nueva API: 6 dígitos
-        data = await apiSelector.loginOtpEmail(userEmail, code);
+        if (isOnboarding) {
+          // ✅ SIGNUP: Primero login, luego verificar email
+          console.log('🆕 Signup flow: Login + Verificar email');
+          data = await apiSelector.loginOtpEmail(userEmail, code);
+          
+          // Después del login exitoso, verificar el email
+          try {
+            console.log('📧 Marcando email como verificado...');
+            await apiSelector.validateOtpEmail(data.data.token, code);
+            console.log('✅ Email marcado como verificado');
+          } catch (emailVerifyError) {
+            console.warn('⚠️ Error marcando email como verificado:', emailVerifyError);
+            // No fallar el flujo, solo logging
+          }
+        } else {
+          // ✅ LOGIN: Solo login
+          console.log('🆕 Login flow: Solo login');
+          data = await apiSelector.loginOtpEmail(userEmail, code);
+        }
       } else {
         // ✅ API antigua: 5 dígitos
         data = await API.authVerifyEmailOTP(userEmail, code);

@@ -290,6 +290,22 @@ const apiSelector = {
     }
   },
 
+  // ✅ validateOtpEmail: Validar email para marcarlo como verificado
+  validateOtpEmail: async (token, otp) => {
+    console.log('🔄 ApiSelector.validateOtpEmail: Iniciando para código de', otp.length, 'dígitos');
+    
+    if (USE_NEW_API) {
+      console.log('🆕 ApiSelector.validateOtpEmail: Usando nueva API');
+      const result = await newApiWrapper.validateOtpEmail(token, otp);
+      console.log('✅ ApiSelector.validateOtpEmail: Nueva API exitosa');
+      return result;
+    } else {
+      console.log('🔄 ApiSelector.validateOtpEmail: API antigua no necesita este paso');
+      // Para API antigua, no es necesario
+      return { isSuccess: true };
+    }
+  },
+
   // TODO: Agregar más métodos según se vayan migrando las funcionalidades
   // requestLoginOtpPhone: async (phone) => { ... },
   // loginOtpPhone: async (phone, otp) => { ... },

@@ -70,7 +70,7 @@ export default function PhoneOTPScreen(props) {
   }, [expectedDigits, userCellphone, token, user, isOnboarding]);
   // ✅ Dígitos según API: Nueva = 6, Antigua = 5
   const expectedDigits = USE_NEW_API ? 6 : 5;
-  const disabled = code.length < expectedDigits;
+  const disabled = code.length < 6;
 
   // Track screen view when component is focused
   React.useEffect(() => {
@@ -84,8 +84,8 @@ export default function PhoneOTPScreen(props) {
 
   React.useEffect(() => {
     if (!isMounted()) return;
-    if (code.length === expectedDigits) handleVerification();
-  }, [code, expectedDigits]);
+    if (code.length === 6) handleVerification();
+  }, [code]);
 
   const handleVerifyAndMerge = async () => {
     setSpinner(true);
@@ -255,11 +255,18 @@ export default function PhoneOTPScreen(props) {
                   ref={pinInputRef}
                   cellSize={50}
                   cellSpacing={8}
-                  codeLength={expectedDigits}
+                  codeLength={6}
                   value={code}
                   onTextChange={(text) => {
                     setTimeout(() => {
-                      setCode(text);
+                      // Detectar si se pegó texto (cambio de longitud > 1)
+                      if (text.length > code.length + 1) {
+                        // Se pegó texto, tomar solo los primeros 6 dígitos
+                        const pastedCode = text.replace(/\D/g, '').substring(0, 6);
+                        setCode(pastedCode);
+                      } else {
+                        setCode(text);
+                      }
                       // Track when user inputs code
                       if (text.length % 2 === 0) {
                         amplitudeService.trackEvent('Input_Changed', {
@@ -270,8 +277,16 @@ export default function PhoneOTPScreen(props) {
                       }
                     }, 0);
                   }}
-                  restrictToNumbers
+                  restrictToNumbers={true}
                   autoFocus={false}
+                  keyboardType="number-pad"
+                  maskDelay={0}
+                  autoCapitalize="none"
+                  enablesReturnKeyAutomatically={false}
+                  returnKeyType="done"
+                  textContentType="oneTimeCode"
+                  editable={true}
+                  selectTextOnFocus={true}
                   cellStyle={{
                     borderWidth: 1,
                     borderColor: colors?.border?.medium || '#D1D5DB',
